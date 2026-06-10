@@ -66,3 +66,12 @@ st.header("Saved Study Sessions")
 if os.path.exists(FILE):
     df = pd.read_csv(FILE)
     st.dataframe(df, hide_index=True)
+
+st.header("Study Trends")
+
+if os.path.exists(FILE):
+    df = pd.read_csv(FILE)
+
+    chart_data = df.groupby("Subject", as_index=False)["Hours"].sum()
+
+    st.bar_chart(chart_data, x="Subject", y="Hours")
