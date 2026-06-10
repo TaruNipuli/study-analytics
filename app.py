@@ -2,6 +2,7 @@ import os.path
 import pandas as pd
 import streamlit as st
 from datetime import date
+import plotly.express as px
 
 subjects = ["Math", "Physics", "Chemistry", "History", "Biology", "Geography"]
 
@@ -79,6 +80,23 @@ st.header("Study Trends")
 if os.path.exists(FILE):
     df = pd.read_csv(FILE)
 
-    chart_data = df.groupby("Subject", as_index=False)["Hours"].sum()
+    # convert date to datetime
+    df["Date"] = pd.to_datetime(df["Date"])
 
-    st.bar_chart(chart_data, x="Subject", y="Hours")
+    # sum hours per subject
+    chart_data = df.groupby("Subject", as_index=False)["Hours"].sum()  # groups rows by subject and calculate total hours
+
+    # plotly bar chart
+    fig = px.bar(chart_data, x="Subject", y="Hours", title="Total Study Hours per Subject")
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # sum hours per date
+    # group by date, sum hours per day, keep Date as a normal column (not index), and sort by date
+    daily_hours = (df.groupby("Date", as_index=False)["Hours"].sum().sort_values("Date"))
+
+    # plotly line chart
+    fig = px.line(daily_hours, x="Date", y="Hours", markers=True, title="Study Hours Over Time")
+
+    st.plotly_chart(fig, use_container_width=True)
+
