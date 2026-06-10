@@ -1,41 +1,50 @@
 import os.path
-
 import pandas as pd
 import streamlit as st
+
+subjects = ["Math", "Physics", "Chemistry", "History", "Biology", "Geography"]
+
+FILE = "study_data.csv"
+
+# reset logic
+if "reset" not in st.session_state:
+    st.session_state.reset = False
+
+if st.session_state.reset:
+    st.session_state.subject = subjects[0]
+    st.session_state.hours = 0.0
+    st.session_state.difficulty = 1
+    st.session_state.score = 0
+    st.session_state.reset = False
+
+# default values
+if "subject" not in st.session_state:
+    st.session_state.subject = subjects[0]
+if "hours" not in st.session_state:
+    st.session_state.hours = 0.0
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = 1
+if "score" not in st.session_state:
+    st.session_state.score = 0
 
 st.title("Study Analytics Dashboard")
 
 st.header("Add study session")
 
-subject = st.text_input("Subject")
+subject = st.selectbox("Subject", subjects, key="subject")
 
-hours = st.number_input(
-    "Study Hours",
-    min_value=0.0,
-    max_value=24.0,
-    step=0.5
-)
+hours = st.number_input("Study Hours", 0.0, 24.0, 0.0, 0.5, key="hours")
 
-difficulty = st.slider(
-    "Difficulty",
-    min_value=1,
-    max_value=5
-)
+difficulty = st.slider("Difficulty", 1, 5, key="difficulty")
 
-score = st.number_input(
-    "Score %",
-    min_value=0,
-    max_value=100
-)
-
-FILE = "study_data.csv"
+score = st.number_input("Score %", 0, 100, key="score")
 
 if st.button("Save"):
     new_data = pd.DataFrame([{
-        "subject": subject,
-        "hours": hours,
-        "difficulty": difficulty,
-        "score": score
+        "Subject": subject,
+        "Hours": hours,
+        "Difficulty": difficulty,
+        "Score %": score
     }])
 
     if os.path.exists(FILE):
@@ -45,13 +54,15 @@ if st.button("Save"):
         data = new_data
 
     data.to_csv(FILE, index=False)
-    st.success("Study session saved!")
+
+    st.success("Saved!")
+
+    # trigger reset next rerun
+    st.session_state.reset = True
+    st.rerun()
 
 st.header("Saved Study Sessions")
 
 if os.path.exists(FILE):
     df = pd.read_csv(FILE)
     st.dataframe(df, hide_index=True)
-else:
-    st.info("No study sessions saved yet")
-
